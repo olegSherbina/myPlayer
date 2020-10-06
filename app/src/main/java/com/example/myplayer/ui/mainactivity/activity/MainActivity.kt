@@ -1,4 +1,4 @@
-package com.example.myplayer.ui.activity
+package com.example.myplayer.ui.mainactivity.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
+import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
 import kotlinx.android.synthetic.main.activity_main.*
@@ -17,9 +18,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setPreviewsRecyclerView()
+    }
+
+    private fun setPreviewsRecyclerView() {
+        //val thumbnail: Bitmap  = ThumbnailUtils.createVideoThumbnail("")
         val drawable = ContextCompat.getDrawable(this, R.drawable.doge)
         val imageDrawables = arrayOf(drawable, drawable, drawable)
-        previewsRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        previewsRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         previewsRecyclerView.adapter = PreviewsRecyclerViewAdapter(imageDrawables)
         val snapHelper: SnapHelper = PagerSnapHelper()
         snapHelper.attachToRecyclerView(previewsRecyclerView)
