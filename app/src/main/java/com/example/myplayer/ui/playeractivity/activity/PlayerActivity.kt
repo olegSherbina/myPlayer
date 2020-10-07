@@ -5,12 +5,15 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
+import com.example.myplayer.core.utils.DescriptionAdapter
+import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAIL
 import com.example.myplayer.ui.mainactivity.activity.VIDEO_URL
 import com.example.myplayer.ui.playeractivity.viewmodel.PlayerActivityViewModel
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
@@ -21,10 +24,12 @@ class PlayerActivity : AppCompatActivity() {
     private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for saving n stuff
     private var uiIsHidden = true
     private lateinit var videoUrl: String
+    private lateinit var videoThumbnailUrl: String
     private lateinit var videoPlayer: SimpleExoPlayer
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
+    private lateinit var playerNotificationManager: PlayerNotificationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +45,10 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
         //setUiState()
         videoUrl = intent.getStringExtra(VIDEO_URL).toString()
-        //extractYoutubeUrl()
+        videoThumbnailUrl = intent.getStringExtra(VIDEO_THUMBNAIL).toString()
     }
 
+    //TODO next and previous clip buttons
     private fun setPlayer() {
         videoPlayer = SimpleExoPlayer.Builder(this).build()
         player_view.player = videoPlayer //TODO don't forget horizontal layout
@@ -52,6 +58,17 @@ class PlayerActivity : AppCompatActivity() {
             videoPlayer.setMediaSource(it)
             videoPlayer.prepare()
         }
+        setPlayerNotification()
+    }
+
+    private fun setPlayerNotification() {
+        playerNotificationManager = PlayerNotificationManager(
+            this,
+            CHANNEL_NOTIFICATION_ID,
+            PLAYER_NOTIFICATION_ID,
+            DescriptionAdapter(videoThumbnailUrl)
+        )
+        playerNotificationManager.setPlayer(videoPlayer)
     }
 
     private fun buildMediaSource(): MediaSource? {
@@ -88,12 +105,17 @@ class PlayerActivity : AppCompatActivity() {
         if (Util.SDK_INT >= 24) {
             releasePlayer()
         }
+        /*if (isFinishing){
+            val intent = Intent(this, PlayerNotificationService::class.java)
+            stopService(intent)
+        }*/
     }
 
     private fun releasePlayer() {
         playWhenReady = videoPlayer.playWhenReady
         playbackPosition = videoPlayer.currentPosition
         currentWindow = videoPlayer.currentWindowIndex
+        playerNotificationManager.setPlayer(null)
         videoPlayer.release()
     }
 
@@ -149,6 +171,10 @@ class PlayerActivity : AppCompatActivity() {
     }*/
 }
 
-const val KEY_PLAYER_POSITION = "com.example.myplayer.ui.playeractivity.activity.PLAYER_POSITION"
+const val KEY_PLAYER_POSITION =
+    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_POSITION"
 const val KEY_PLAYER_PLAY_WHEN_READY =
-    "com.example.myplayer.ui.playeractivity.activity.PLAY_WHEN_READY"
+    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAY_WHEN_READY"
+const val PLAYER_NOTIFICATION_ID = 1337
+const val CHANNEL_NOTIFICATION_ID =
+    "com.example.myplayer.service.PlayerNotificationService.CHANNEL_NOTIFICATION_ID"

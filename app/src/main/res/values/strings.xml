@@ -3,4 +3,6 @@
 
     <string name="thumbnail_url_template">https://img.youtube.com/vi/</string>
     <string name="thumbnail_size">/sddefault.jpg</string>
+    <string name="player_notification_title">My Player</string>
+    <string name="player_notification_message">notification message</string>
 </resources>

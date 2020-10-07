@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
     val listOfItems = mutableListOf<String>()
-    var videoUrls = mutableListOf<String>()
+    var thumbnailsAndVideosUrl = mutableListOf<Pair<String, String>>()
     private val layoutManager: LinearLayoutManager =
         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
@@ -45,7 +45,8 @@ class MainActivity : AppCompatActivity() {
         snapHelper.attachToRecyclerView(previewsRecyclerView)
         previewsRecyclerView.onItemClick { recyclerView, position, v ->
             val intent = Intent(this, PlayerActivity::class.java).apply {
-                putExtra(VIDEO_URL, videoUrls[position])
+                putExtra(VIDEO_THUMBNAIL, listOfItems[position])
+                putExtra(VIDEO_URL, thumbnailsAndVideosUrl[position].second)
             }
             startActivity(intent)
         }
@@ -55,9 +56,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun addObservers() {
         viewModel.thumbnailsAndVideosUrl.observe(this, Observer { thumbnailsAndVideosUrl ->
+            this.thumbnailsAndVideosUrl = thumbnailsAndVideosUrl
             listOfItems.clear()
             thumbnailsAndVideosUrl.forEach { thumbnailAndVideoUrl ->
-                this.videoUrls.add(thumbnailAndVideoUrl.second)
                 val sb: StringBuilder = StringBuilder()
                 sb.apply {
                     append(getString(R.string.thumbnail_url_template))
@@ -72,4 +73,5 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-const val VIDEO_URL = "com.example.myplayer.ui.activity.POSITION"
+const val VIDEO_URL = "com.example.myplayer.ui.activity.VIDEO_URL"
+const val VIDEO_THUMBNAIL = "com.example.myplayer.ui.activity.VIDEO_THUMBNAIL"
