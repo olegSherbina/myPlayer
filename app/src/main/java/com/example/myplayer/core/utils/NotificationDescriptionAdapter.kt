@@ -10,7 +10,7 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 
 
-class DescriptionAdapter(
+class NotificationDescriptionAdapter(
     val thumbnailUrl: String,
     val contentTitle: String,
     val contentDescription: String

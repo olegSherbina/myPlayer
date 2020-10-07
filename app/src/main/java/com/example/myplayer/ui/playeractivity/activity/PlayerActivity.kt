@@ -4,14 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.view.Window
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
 import com.example.myplayer.core.base.CHANNEL_NOTIFICATION_ID
-import com.example.myplayer.core.utils.DescriptionAdapter
-import com.example.myplayer.ui.mainactivity.activity.PLAYERACTIVITY_RESULT_CODE
+import com.example.myplayer.core.utils.NotificationDescriptionAdapter
+import com.example.myplayer.service.PlayerNotificationService
+import com.example.myplayer.service.VIDEO_THUMBNAIL_URL
 import com.example.myplayer.ui.mainactivity.activity.POSITION
 import com.example.myplayer.ui.mainactivity.activity.VIDEOS_URL
 import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAILS_URL
@@ -45,13 +45,11 @@ class PlayerActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
         setContentView(R.layout.activity_player)
-        this.playListPosition = intent.getIntExtra(POSITION, 0)
-        videoThumbnailsUrl =
-            intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
+        playListPosition = intent.getIntExtra(POSITION, 0)
+        videoThumbnailsUrl = intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
         videosUrl = intent.getStringArrayListExtra(VIDEOS_URL) as ArrayList<String>
-
-        videoThumbnailUrl = videoThumbnailsUrl[this.playListPosition]
-        videoUrl = videosUrl[this.playListPosition]
+        videoThumbnailUrl = videoThumbnailsUrl[playListPosition]
+        videoUrl = videosUrl[playListPosition]
     }
 
     //TODO next and previous clip buttons
@@ -60,7 +58,6 @@ class PlayerActivity : AppCompatActivity() {
         player_view.player = videoPlayer
         videoPlayer.setPlayWhenReady(playWhenReady)
         videoPlayer.seekTo(this.playListPosition, playbackPosition)
-
 
         val playlistItems: List<MediaItem> = videosUrl.map { MediaItem.fromUri(it) }
 
@@ -103,13 +100,16 @@ class PlayerActivity : AppCompatActivity() {
             this,
             CHANNEL_NOTIFICATION_ID,
             PLAYER_NOTIFICATION_ID,
-            DescriptionAdapter(
+            NotificationDescriptionAdapter(
                 videoThumbnailUrl,
                 getString(R.string.content_title_placeholder),
                 getString(R.string.content_description_placeholder)
             )
         )
         playerNotificationManager.setPlayer(videoPlayer)
+        /*val serviceIntent = Intent(this, PlayerNotificationService::class.java)
+        serviceIntent.putExtra(VIDEO_THUMBNAIL_URL, videoThumbnailUrl)
+        startService(serviceIntent)*/
     }
 
     override fun onStart() {
