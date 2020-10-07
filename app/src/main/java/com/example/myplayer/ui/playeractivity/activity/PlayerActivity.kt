@@ -1,21 +1,26 @@
 package com.example.myplayer.ui.playeractivity.activity
 
-import android.net.Uri
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
 import com.example.myplayer.core.base.CHANNEL_NOTIFICATION_ID
 import com.example.myplayer.core.utils.DescriptionAdapter
-import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAIL
-import com.example.myplayer.ui.mainactivity.activity.VIDEO_URL
+import com.example.myplayer.ui.mainactivity.activity.PLAYERACTIVITY_RESULT_CODE
+import com.example.myplayer.ui.mainactivity.activity.POSITION
+import com.example.myplayer.ui.mainactivity.activity.VIDEOS_URL
+import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAILS_URL
 import com.example.myplayer.ui.playeractivity.viewmodel.PlayerActivityViewModel
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.activity_player.*
 
@@ -23,43 +28,74 @@ import kotlinx.android.synthetic.main.activity_player.*
 class PlayerActivity : AppCompatActivity() {
 
     private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for saving n stuff
-    private var uiIsHidden = true
     private lateinit var videoUrl: String
     private lateinit var videoThumbnailUrl: String
+    private lateinit var videoThumbnailsUrl: ArrayList<String>
+    private lateinit var videosUrl: ArrayList<String>
+    private var playListPosition = 0
     private lateinit var videoPlayer: SimpleExoPlayer
     private var playWhenReady = true
-    private var currentWindow = 0
     private var playbackPosition: Long = 0
     private lateinit var playerNotificationManager: PlayerNotificationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*this.requestWindowFeature(Window.FEATURE_NO_TITLE)
         this.window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
-        val savedUiState = savedInstanceState?.getBoolean("uiIsHidden")
-        if (savedUiState != null) {
-            uiIsHidden = savedUiState
-        }*/
         setContentView(R.layout.activity_player)
-        //setUiState()
-        videoUrl = intent.getStringExtra(VIDEO_URL).toString()
-        videoThumbnailUrl = intent.getStringExtra(VIDEO_THUMBNAIL).toString()
+        this.playListPosition = intent.getIntExtra(POSITION, 0)
+        videoThumbnailsUrl =
+            intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
+        videosUrl = intent.getStringArrayListExtra(VIDEOS_URL) as ArrayList<String>
+
+        videoThumbnailUrl = videoThumbnailsUrl[this.playListPosition]
+        videoUrl = videosUrl[this.playListPosition]
     }
 
     //TODO next and previous clip buttons
     private fun setPlayer() {
         videoPlayer = SimpleExoPlayer.Builder(this).build()
-        player_view.player = videoPlayer //TODO don't forget horizontal layout
-        videoPlayer.setPlayWhenReady(playWhenReady);
-        videoPlayer.seekTo(currentWindow, playbackPosition);
-        buildMediaSource()?.let {
-            videoPlayer.setMediaSource(it)
-            videoPlayer.prepare()
-        }
+        player_view.player = videoPlayer
+        videoPlayer.setPlayWhenReady(playWhenReady)
+        videoPlayer.seekTo(this.playListPosition, playbackPosition)
+
+
+        val playlistItems: List<MediaItem> = videosUrl.map { MediaItem.fromUri(it) }
+
+        videoPlayer.setMediaItems(playlistItems)
+        videoPlayer.prepare()
+        setEventListeners()
         setPlayerNotification()
+    }
+
+    private fun setEventListeners() {
+        videoPlayer.addListener(object : Player.DefaultEventListener() {
+            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                when (playbackState) {
+                    Player.STATE_IDLE -> {
+
+                    }
+                    Player.STATE_BUFFERING -> {
+                        videoBufferingProgressBar.visibility = View.VISIBLE
+                    }
+                    Player.STATE_READY -> {
+                        videoBufferingProgressBar.visibility = View.GONE
+                    }
+                    Player.STATE_ENDED -> {
+
+                    }
+                }
+            }
+        })
+        player_view.setControllerVisibilityListener {
+            if (it == PlayerView.VISIBLE) {
+                showSystemUI()
+            } else {
+                hideSystemUI()
+            }
+        }
     }
 
     private fun setPlayerNotification() {
@@ -74,12 +110,6 @@ class PlayerActivity : AppCompatActivity() {
             )
         )
         playerNotificationManager.setPlayer(videoPlayer)
-    }
-
-    private fun buildMediaSource(): MediaSource? {
-        val dataSourceFactory = DefaultDataSourceFactory(this, "sample")
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(Uri.parse(videoUrl)))
     }
 
     override fun onStart() {
@@ -119,65 +149,56 @@ class PlayerActivity : AppCompatActivity() {
     private fun releasePlayer() {
         playWhenReady = videoPlayer.playWhenReady
         playbackPosition = videoPlayer.currentPosition
-        currentWindow = videoPlayer.currentWindowIndex
+        playListPosition = videoPlayer.currentWindowIndex
         playerNotificationManager.setPlayer(null)
         videoPlayer.release()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(KEY_PLAYER_POSITION, videoPlayer.currentPosition)
+        outState.putLong(PLAYER_POSITION, videoPlayer.currentPosition)
         outState.putBoolean(KEY_PLAYER_PLAY_WHEN_READY, videoPlayer.playWhenReady)
+        outState.putInt(PLAYER_PLAYLIST_POSITION, videoPlayer.currentWindowIndex)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.let {
-            videoPlayer.seekTo(it.getLong(KEY_PLAYER_POSITION))
+            videoPlayer.seekTo(
+                it.getInt(PLAYER_PLAYLIST_POSITION),
+                it.getLong(PLAYER_POSITION)
+            )
             videoPlayer.playWhenReady = it.getBoolean(KEY_PLAYER_PLAY_WHEN_READY)
             //TODO seamless transition, current one is not the best solution, should handle orientation change manually
         }
     }
 
-
-    /*private fun setUiState() {
-        if (uiIsHidden) {
-            hideSystemUI()
-        } else {
-            showSystemUI()
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean("uiIsHidden", uiIsHidden)
-        super.onSaveInstanceState(outState)
+    override fun onBackPressed() {
+        val resultIntent = Intent()
+        resultIntent.putExtra(PLAYER_PLAYLIST_POSITION, videoPlayer.currentWindowIndex)
+        setResult(Activity.RESULT_OK, resultIntent)
+        super.onBackPressed()
     }
 
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        uiIsHidden = true
     }
 
     private fun showSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        uiIsHidden = false
-    }*/
+    }
 }
 
-const val KEY_PLAYER_POSITION =
+const val PLAYER_POSITION =
     "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_POSITION"
+const val PLAYER_PLAYLIST_POSITION =
+    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_PLAYLIST_POSITION"
 const val KEY_PLAYER_PLAY_WHEN_READY =
     "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAY_WHEN_READY"
-const val PLAYER_NOTIFICATION_ID = 1337
+const val PLAYER_NOTIFICATION_ID = 1

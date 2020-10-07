@@ -1,5 +1,6 @@
 package com.example.myplayer.ui.mainactivity.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -12,17 +13,19 @@ import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
 import com.example.myplayer.core.utils.UrlUtils
 import com.example.myplayer.ui.mainactivity.viewmodel.MainActivityViewModel
+import com.example.myplayer.ui.playeractivity.activity.PLAYER_PLAYLIST_POSITION
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
-    val listOfItems = mutableListOf<String>()
-    var thumbnailsAndVideosUrl = mutableListOf<Pair<String, String>>()
+    val videoThumbnailsUrl = ArrayList<String>()
+    val videosUrl = ArrayList<String>()
     private val layoutManager: LinearLayoutManager =
         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
@@ -39,16 +42,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setPreviewsRecyclerView() {
-        previewsRecyclerView.adapter = PreviewsRecyclerViewAdapter(listOfItems)
+        previewsRecyclerView.adapter = PreviewsRecyclerViewAdapter(videoThumbnailsUrl)
         previewsRecyclerView.layoutManager = layoutManager
         val snapHelper: SnapHelper = PagerSnapHelper()
         snapHelper.attachToRecyclerView(previewsRecyclerView)
         previewsRecyclerView.onItemClick { recyclerView, position, v ->
             val intent = Intent(this, PlayerActivity::class.java).apply {
-                putExtra(VIDEO_THUMBNAIL, listOfItems[position])
-                putExtra(VIDEO_URL, thumbnailsAndVideosUrl[position].second)
+                putExtra(POSITION, position)
+                putStringArrayListExtra(VIDEO_THUMBNAILS_URL, videoThumbnailsUrl)
+                putStringArrayListExtra(VIDEOS_URL, videosUrl)
             }
-            startActivity(intent)
+            startActivityForResult(intent, PLAYERACTIVITY_RESULT_CODE)
+            //startActivity(intent)
         }
         previewsRecyclerView.adapter?.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -56,8 +61,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun addObservers() {
         viewModel.thumbnailsAndVideosUrl.observe(this, Observer { thumbnailsAndVideosUrl ->
-            this.thumbnailsAndVideosUrl = thumbnailsAndVideosUrl
-            listOfItems.clear()
+            videoThumbnailsUrl.clear()
             thumbnailsAndVideosUrl.forEach { thumbnailAndVideoUrl ->
                 val sb: StringBuilder = StringBuilder()
                 sb.apply {
@@ -66,12 +70,31 @@ class MainActivity : AppCompatActivity() {
                     append(getString(R.string.thumbnail_size))
                 }
                 val thumbnailURL = sb.toString()
-                listOfItems.add(thumbnailURL)
+                videoThumbnailsUrl.add(thumbnailURL)
+                videosUrl.add(thumbnailAndVideoUrl.second)
             }
             previewsRecyclerView.adapter?.notifyDataSetChanged()
         })
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            PLAYERACTIVITY_RESULT_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val currentItem = data?.getIntExtra(PLAYER_PLAYLIST_POSITION, 0)?: 0
+                    scrollToCurrentItem(currentItem)
+                }
+            }
+        }
+    }
+
+    private fun scrollToCurrentItem(currentItem: Int) {
+        previewsRecyclerView.scrollToPosition(currentItem)
+    }
 }
 
-const val VIDEO_URL = "com.example.myplayer.ui.activity.VIDEO_URL"
-const val VIDEO_THUMBNAIL = "com.example.myplayer.ui.activity.VIDEO_THUMBNAIL"
+const val VIDEOS_URL = "com.example.myplayer.ui.activity.VIDEO_URL"
+const val VIDEO_THUMBNAILS_URL = "com.example.myplayer.ui.activity.VIDEO_THUMBNAIL"
+const val POSITION = "com.example.myplayer.ui.activity.POSITION"
+const val PLAYERACTIVITY_RESULT_CODE = 1
