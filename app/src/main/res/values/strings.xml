@@ -5,4 +5,6 @@
     <string name="thumbnail_size">/sddefault.jpg</string>
     <string name="player_notification_title">My Player</string>
     <string name="player_notification_message">notification message</string>
+    <string name="content_title_placeholder">Now playing:</string>
+    <string name="content_description_placeholder">Some music</string>
 </resources>

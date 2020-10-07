@@ -11,14 +11,16 @@ import com.squareup.picasso.Target
 
 
 class DescriptionAdapter(
-    val thumbnailUrl: String
+    val thumbnailUrl: String,
+    val contentTitle: String,
+    val contentDescription: String
 ) : PlayerNotificationManager.MediaDescriptionAdapter {
     override fun getCurrentContentTitle(player: Player): String {
-        return "Title"
+        return contentTitle
     }
 
     override fun getCurrentContentText(player: Player): String? {
-        return "ContentText"
+        return contentDescription
     }
 
     override fun getCurrentLargeIcon(player: Player, callback: BitmapCallback): Bitmap? {

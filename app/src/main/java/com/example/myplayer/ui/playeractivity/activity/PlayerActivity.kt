@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
+import com.example.myplayer.core.base.CHANNEL_NOTIFICATION_ID
 import com.example.myplayer.core.utils.DescriptionAdapter
 import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAIL
 import com.example.myplayer.ui.mainactivity.activity.VIDEO_URL
@@ -66,7 +67,11 @@ class PlayerActivity : AppCompatActivity() {
             this,
             CHANNEL_NOTIFICATION_ID,
             PLAYER_NOTIFICATION_ID,
-            DescriptionAdapter(videoThumbnailUrl)
+            DescriptionAdapter(
+                videoThumbnailUrl,
+                getString(R.string.content_title_placeholder),
+                getString(R.string.content_description_placeholder)
+            )
         )
         playerNotificationManager.setPlayer(videoPlayer)
     }
@@ -176,5 +181,3 @@ const val KEY_PLAYER_POSITION =
 const val KEY_PLAYER_PLAY_WHEN_READY =
     "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAY_WHEN_READY"
 const val PLAYER_NOTIFICATION_ID = 1337
-const val CHANNEL_NOTIFICATION_ID =
-    "com.example.myplayer.service.PlayerNotificationService.CHANNEL_NOTIFICATION_ID"
