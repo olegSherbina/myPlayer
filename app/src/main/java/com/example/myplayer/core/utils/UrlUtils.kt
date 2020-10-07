@@ -4,7 +4,7 @@ import java.lang.UnsupportedOperationException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class URLUtils {
+class UrlUtils {
     companion object{
         public fun convertToThumbnailURL(videoURL: String): String{
             val pattern: Pattern = Pattern.compile("^[^=]*=(.*)$")

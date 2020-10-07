@@ -24,7 +24,9 @@ class YouTubeVideoInfoRetriever {
             SimpleHttpClient.HTTP_GET,
             SimpleHttpClient.DEFAULT_TIMEOUT
         )
-        parse(output)
+        if (output != null) {
+            parse(output)
+        }
     }
 
     fun getInfo(key: String?): String? {
@@ -40,8 +42,8 @@ class YouTubeVideoInfoRetriever {
     }
 
     @Throws(UnsupportedEncodingException::class)
-    private fun parse(data: String?) {
-        val splits = data!!.split("&".toRegex()).toTypedArray()
+    private fun parse(data: String) {
+        val splits = data.split("&".toRegex()).toTypedArray()
         var kvpStr = ""
         if (splits.size < 1) {
             return
@@ -71,8 +73,8 @@ class YouTubeVideoInfoRetriever {
     class SimpleHttpClient {
         @Throws(IOException::class)
         fun execute(
-            urlStr: String?,
-            httpMethod: String?,
+            urlStr: String,
+            httpMethod: String,
             timeout: Int
         ): String? {
             var url: URL? = null

@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
-import com.example.myplayer.core.utils.URLUtils
+import com.example.myplayer.core.utils.UrlUtils
 import com.example.myplayer.ui.mainactivity.viewmodel.MainActivityViewModel
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
@@ -54,14 +54,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addObservers() {
-        viewModel.thumbnailURLs.observe(this, Observer { videoUrls ->
-            this.videoUrls = videoUrls
+        viewModel.thumbnailsAndVideosUrl.observe(this, Observer { thumbnailsAndVideosUrl ->
             listOfItems.clear()
-            videoUrls.forEach { videoURL ->
+            thumbnailsAndVideosUrl.forEach { thumbnailAndVideoUrl ->
+                this.videoUrls.add(thumbnailAndVideoUrl.second)
                 val sb: StringBuilder = StringBuilder()
                 sb.apply {
                     append(getString(R.string.thumbnail_url_template))
-                    append(URLUtils.convertToThumbnailURL(videoURL))
+                    append(UrlUtils.convertToThumbnailURL(thumbnailAndVideoUrl.first))
                     append(getString(R.string.thumbnail_size))
                 }
                 val thumbnailURL = sb.toString()
