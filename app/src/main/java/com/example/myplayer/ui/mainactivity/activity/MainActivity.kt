@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
 import com.example.myplayer.core.utils.UrlUtils
 import com.example.myplayer.player.ExoPlayerWrapper
-import com.example.myplayer.ui.mainactivity.viewmodel.MainActivityViewModel
+import com.example.myplayer.viewmodel.MainActivityViewModel
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         checkInternetConnection()
         setPreviewsRecyclerView()
         addObservers()
-        loadThumbnails()
+        loadPlaylistLinks()
         videoPlayer = exoPlayerWrapper.getInstance()
     }
 
@@ -65,8 +65,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadThumbnails() {
-        viewModel.getThumbnailUrls()
+    private fun loadPlaylistLinks() {
+        viewModel.writeTestData()
+        viewModel.loadPlaylistLinks("Test playlist")
     }
 
     private fun setPreviewsRecyclerView() {
@@ -87,7 +88,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addObservers() {
-        viewModel.thumbnailsAndVideosUrl.observe(this, Observer { thumbnailsAndVideosUrl ->
+        viewModel.playlistLinks.observe(this, Observer { thumbnailsAndVideosUrl ->
             videoThumbnailsUrl.clear()
             thumbnailsAndVideosUrl.forEach { thumbnailAndVideoUrl ->
                 val sb: StringBuilder = StringBuilder()

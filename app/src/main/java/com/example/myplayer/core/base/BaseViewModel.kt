@@ -1,7 +1,7 @@
 package com.example.myplayer.core.base
 
 import androidx.lifecycle.ViewModel
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.disposables.CompositeDisposable
 
 abstract class BaseViewModel internal constructor() : ViewModel() {
     protected val compositeDisposable: CompositeDisposable = CompositeDisposable()

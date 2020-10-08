@@ -1,4 +1,4 @@
-package com.example.myplayer.ui.playeractivity.viewmodel
+package com.example.myplayer.viewmodel
 
 import android.graphics.drawable.Drawable
 import androidx.hilt.lifecycle.ViewModelInject

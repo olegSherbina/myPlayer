@@ -13,7 +13,7 @@ import com.example.myplayer.service.PlayerNotificationService.Companion.FROM_NOT
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.POSITION
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEOS_URL
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEO_THUMBNAILS_URL
-import com.example.myplayer.ui.playeractivity.viewmodel.PlayerActivityViewModel
+import com.example.myplayer.viewmodel.PlayerActivityViewModel
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -25,7 +25,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
 
-    private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for saving n stuff
+    private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for caching videos n stuff
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
     private var playListPosition: Int = 0
