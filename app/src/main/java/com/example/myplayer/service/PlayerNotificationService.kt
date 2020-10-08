@@ -23,7 +23,7 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
     @Inject
     lateinit var exoPlayerWrapper: ExoPlayerWrapper
     lateinit var videoPlayer: SimpleExoPlayer
-    private var playerNotificationManager: PlayerNotificationManager? = null
+    private lateinit var playerNotificationManager: PlayerNotificationManager
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
     private var playListPosition: Int = 0
@@ -63,18 +63,15 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
     }
 
     private fun addNotificationToPlayer(videoThumbnailUrl: String) {
-        if (playerNotificationManager == null) {
-            playerNotificationManager = PlayerNotificationManager(
-                this,
-                CHANNEL_NOTIFICATION_ID,
-                PLAYER_NOTIFICATION_ID,
-                NotificationDescriptionAdapter(
-                    videoThumbnailUrl,
-                    getString(R.string.content_title_placeholder),
-                    getString(R.string.content_description_placeholder)
-                )
-            )
-            playerNotificationManager?.setPlayer(videoPlayer)
+        playerNotificationManager = PlayerNotificationManager(
+            this,
+            CHANNEL_NOTIFICATION_ID,
+            PLAYER_NOTIFICATION_ID,
+            NotificationDescriptionAdapter(
+                videoThumbnailUrl,
+                getString(R.string.content_title_placeholder),
+                getString(R.string.content_description_placeholder)
+            ),
             object : PlayerNotificationManager.NotificationListener {
                 override fun onNotificationPosted(
                     notificationId: Int,
@@ -93,18 +90,20 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
                     notificationId: Int,
                     dismissedByUser: Boolean
                 ) {
+                    playerNotificationManager.setPlayer(null)
+                    videoPlayer.stop()
                     super.onNotificationCancelled(notificationId, dismissedByUser)
                     stopSelf()
                 }
 
             }
-            playerNotificationManager?.setPlayer(videoPlayer)
-        }
+        )
+        playerNotificationManager.setPlayer(videoPlayer)
     }
 
     override fun onDestroy() {
-        playerNotificationManager?.setPlayer(null)
-        playerNotificationManager = null
+        playerNotificationManager.setPlayer(null)
+        videoPlayer.stop()
         super.onDestroy()
     }
 }

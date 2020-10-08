@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
 import com.example.myplayer.core.utils.UrlUtils
+import com.example.myplayer.service.PlayerNotificationService
 import com.example.myplayer.ui.mainactivity.viewmodel.MainActivityViewModel
 import com.example.myplayer.ui.playeractivity.activity.PLAYER_PLAYLIST_POSITION
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             PLAYERACTIVITY_RESULT_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val currentItem = data?.getIntExtra(PLAYER_PLAYLIST_POSITION, 0)?: 0
+                    val currentItem = data?.getIntExtra(PLAYER_PLAYLIST_POSITION, 0) ?: 0
                     scrollToCurrentItem(currentItem)
                 }
             }

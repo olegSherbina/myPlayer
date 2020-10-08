@@ -17,7 +17,6 @@ import com.example.myplayer.ui.playeractivity.viewmodel.PlayerActivityViewModel
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.ui.PlayerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_player.*
@@ -27,7 +26,6 @@ import javax.inject.Inject
 class PlayerActivity : AppCompatActivity() {
 
     private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for saving n stuff
-    private lateinit var videoThumbnailUrl: String
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
     private var playListPosition: Int = 0
@@ -36,8 +34,8 @@ class PlayerActivity : AppCompatActivity() {
     @Inject
     lateinit var exoPlayerWrapper: ExoPlayerWrapper
     lateinit var videoPlayer: SimpleExoPlayer
-    private lateinit var playerNotificationManager: PlayerNotificationManager
     private var shouldStartService: Boolean = true
+    private var uiIsHidden: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,13 +50,19 @@ class PlayerActivity : AppCompatActivity() {
         videoThumbnailsUrl =
             intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
         videosUrl = intent.getStringArrayListExtra(VIDEOS_URL) as ArrayList<String>
-        videoThumbnailUrl = videoThumbnailsUrl[playListPosition]
-
+        shouldStartService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE) ?: true
+        uiIsHidden = savedInstanceState?.getBoolean(UI_IS_HIDDEN) ?: false
         player_view.player = videoPlayer
         setEventListeners()
-        shouldStartService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE)?: true
         if (shouldStartService) {
             startPlayerService()
+        }
+        if (uiIsHidden) {
+            hideSystemUI()
+            player_view.hideController()
+        } else {
+            showSystemUI()
+            player_view.showController()
         }
     }
 
@@ -84,7 +88,7 @@ class PlayerActivity : AppCompatActivity() {
             override fun onPositionDiscontinuity(reason: Int) {
                 super.onPositionDiscontinuity(reason)
                 if (reason == DISCONTINUITY_REASON_SEEK) {
-                    playListPosition = videoPlayer.currentWindowIndex
+                    playListPosition = videoPlayer.currentWindowIndex //TODO check if does anything
                 }
             }
         })
@@ -98,74 +102,11 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun startPlayerService() {
-        /*playerNotificationManager = PlayerNotificationManager(
-            this,
-            CHANNEL_NOTIFICATION_ID,
-            PLAYER_NOTIFICATION_ID,
-            NotificationDescriptionAdapter(
-                videoThumbnailUrl,
-                getString(R.string.content_title_placeholder),
-                getString(R.string.content_description_placeholder)
-            )
-        )
-        playerNotificationManager.setPlayer(videoPlayer)*/
         val serviceIntent = Intent(this, PlayerNotificationService::class.java)
         serviceIntent.putExtra(VIDEO_THUMBNAILS_URL, videoThumbnailsUrl)
         serviceIntent.putExtra(VIDEOS_URL, videosUrl)
         serviceIntent.putExtra(POSITION, playListPosition)
         startService(serviceIntent)
-    }
-
-    /*override fun onStart() {
-        super.onStart()
-        if (Util.SDK_INT >= 24) {
-            setPlayer()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if ((Util.SDK_INT < 24)) {
-            setPlayer()
-        }
-        videoPlayer.playWhenReady = true
-    }*/
-
-    override fun onPause() {
-        super.onPause()
-        /*if (Util.SDK_INT < 24) {
-            releasePlayer()
-        }*/
-    }
-
-    override fun onStop() {
-        super.onStop()
-        /*videoPlayer.playWhenReady = false
-        if (Util.SDK_INT >= 24) {
-            releasePlayer()
-        }*/
-        /*if (isFinishing){
-            val intent = Intent(this, PlayerNotificationService::class.java)
-            stopService(intent)
-        }*/
-    }
-
-    private fun releasePlayer() {
-        playerNotificationManager.setPlayer(null)
-        videoPlayer.release()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean(SHOULD_START_SERVICE, false)
-    }
-
-
-    override fun onBackPressed() {
-        val resultIntent = Intent()
-        resultIntent.putExtra(PLAYER_PLAYLIST_POSITION, videoPlayer.currentWindowIndex)
-        setResult(Activity.RESULT_OK, resultIntent)
-        super.onBackPressed()
     }
 
     private fun hideSystemUI() {
@@ -174,19 +115,36 @@ class PlayerActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
+        supportActionBar?.hide()
+        uiIsHidden = true
     }
 
     private fun showSystemUI() {
+        supportActionBar?.show()
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        uiIsHidden = false
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(SHOULD_START_SERVICE, false)
+        outState.putBoolean(UI_IS_HIDDEN, uiIsHidden)
+    }
+
+    override fun onBackPressed() {
+        val resultIntent = Intent()
+        resultIntent.putExtra(PLAYER_PLAYLIST_POSITION, videoPlayer.currentWindowIndex)
+        setResult(Activity.RESULT_OK, resultIntent)
+        super.onBackPressed()
     }
 }
 
-const val PLAYER_POSITION =
-    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_POSITION"
 const val PLAYER_PLAYLIST_POSITION =
     "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_PLAYLIST_POSITION"
+const val UI_IS_HIDDEN =
+    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.UI_IS_HIDDEN"
 const val SHOULD_START_SERVICE =
     "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.SHOULD_START_SERVICE"
 const val PLAYER_NOTIFICATION_ID = 1
