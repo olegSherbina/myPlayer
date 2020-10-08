@@ -15,7 +15,6 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
     private val attachListener: RecyclerView.OnChildAttachStateChangeListener =
         object : RecyclerView.OnChildAttachStateChangeListener {
             override fun onChildViewAttachedToWindow(view: View) {
-                // every time a new child view is attached add click listeners to it
                 val holder = this@ItemClickSupport.recyclerView.getChildViewHolder(view)
                     .takeIf { it is ItemClickSupportViewHolder } as? ItemClickSupportViewHolder
 
@@ -27,23 +26,16 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
                 }
             }
 
-            override fun onChildViewDetachedFromWindow(view: View) {
-
-            }
+            override fun onChildViewDetachedFromWindow(view: View) {}
         }
 
     init {
-        // the ID must be declared in XML, used to avoid
-        // replacing the ItemClickSupport without removing
-        // the old one from the RecyclerView
         this.recyclerView.setTag(R.id.item_click_support, this)
         this.recyclerView.addOnChildAttachStateChangeListener(attachListener)
     }
 
     companion object {
         fun addTo(view: RecyclerView): ItemClickSupport {
-            // if there's already an ItemClickSupport attached
-            // to this RecyclerView do not replace it, use it
             var support: ItemClickSupport? =
                 view.getTag(R.id.item_click_support) as? ItemClickSupport
             if (support == null) {
@@ -61,8 +53,6 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
 
     private val onClickListener = View.OnClickListener { v ->
         val listener = onItemClickListener ?: return@OnClickListener
-        // ask the RecyclerView for the viewHolder of this view.
-        // then use it to get the position for the adapter
         val holder = this.recyclerView.getChildViewHolder(v)
         listener.invoke(this.recyclerView, holder.adapterPosition, v)
     }
@@ -87,16 +77,13 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
         onItemLongClickListener = listener
         return this
     }
-
 }
 
-/** Give click-ability and long-click-ability control to the ViewHolder */
 interface ItemClickSupportViewHolder {
     val isClickable: Boolean get() = true
     val isLongClickable: Boolean get() = true
 }
 
-// Extension function
 fun RecyclerView.addItemClickSupport(configuration: ItemClickSupport.() -> Unit = {}) =
     ItemClickSupport.addTo(this).apply(configuration)
 

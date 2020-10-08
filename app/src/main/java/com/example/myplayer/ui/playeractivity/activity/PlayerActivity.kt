@@ -1,6 +1,5 @@
 package com.example.myplayer.ui.playeractivity.activity
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -10,9 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
 import com.example.myplayer.player.ExoPlayerWrapper
 import com.example.myplayer.service.PlayerNotificationService
-import com.example.myplayer.ui.mainactivity.activity.POSITION
-import com.example.myplayer.ui.mainactivity.activity.VIDEOS_URL
-import com.example.myplayer.ui.mainactivity.activity.VIDEO_THUMBNAILS_URL
+import com.example.myplayer.service.PlayerNotificationService.Companion.FROM_NOTIFICATION
+import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.POSITION
+import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEOS_URL
+import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEO_THUMBNAILS_URL
 import com.example.myplayer.ui.playeractivity.viewmodel.PlayerActivityViewModel
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_SEEK
@@ -36,6 +36,32 @@ class PlayerActivity : AppCompatActivity() {
     lateinit var videoPlayer: SimpleExoPlayer
     private var shouldStartService: Boolean = true
     private var uiIsHidden: Boolean = false
+    private var fromNotification = false
+    private val playerListener: Player.EventListener = object : Player.EventListener {
+        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            when (playbackState) {
+                Player.STATE_IDLE -> {
+                    val a = 69
+                }
+                Player.STATE_BUFFERING -> {
+                    videoBufferingProgressBar.visibility = View.VISIBLE
+                }
+                Player.STATE_READY -> {
+                    videoBufferingProgressBar.visibility = View.GONE
+                }
+                Player.STATE_ENDED -> {
+                    val a = 69
+                }
+            }
+        }
+
+        override fun onPositionDiscontinuity(reason: Int) {
+            super.onPositionDiscontinuity(reason)
+            if (reason == DISCONTINUITY_REASON_SEEK) {
+                playListPosition = videoPlayer.currentWindowIndex
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,13 +70,17 @@ class PlayerActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
         setContentView(R.layout.activity_player)
+        fromNotification = intent.getBooleanExtra(FROM_NOTIFICATION, false)
         videoPlayer = exoPlayerWrapper.getInstance()
-        //shouldSwitchToNewPosition = intent.hasExtra(POSITION)
-        playListPosition = intent.getIntExtra(POSITION, 0)
-        videoThumbnailsUrl =
-            intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
-        videosUrl = intent.getStringArrayListExtra(VIDEOS_URL) as ArrayList<String>
-        shouldStartService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE) ?: true
+        if (!fromNotification) {
+            playListPosition = intent.getIntExtra(POSITION, 0)
+            videoThumbnailsUrl =
+                intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
+            videosUrl = intent.getStringArrayListExtra(VIDEOS_URL) as ArrayList<String>
+            shouldStartService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE) ?: true
+        } else {
+            shouldStartService = false
+        }
         uiIsHidden = savedInstanceState?.getBoolean(UI_IS_HIDDEN) ?: false
         player_view.player = videoPlayer
         setEventListeners()
@@ -67,31 +97,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setEventListeners() {
-        videoPlayer.addListener(object : Player.DefaultEventListener() {
-            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                when (playbackState) {
-                    Player.STATE_IDLE -> {
-
-                    }
-                    Player.STATE_BUFFERING -> {
-                        videoBufferingProgressBar.visibility = View.VISIBLE
-                    }
-                    Player.STATE_READY -> {
-                        videoBufferingProgressBar.visibility = View.GONE
-                    }
-                    Player.STATE_ENDED -> {
-
-                    }
-                }
-            }
-
-            override fun onPositionDiscontinuity(reason: Int) {
-                super.onPositionDiscontinuity(reason)
-                if (reason == DISCONTINUITY_REASON_SEEK) {
-                    playListPosition = videoPlayer.currentWindowIndex //TODO check if does anything
-                }
-            }
-        })
+        videoPlayer.addListener(playerListener)
         player_view.setControllerVisibilityListener {
             if (it == PlayerView.VISIBLE) {
                 showSystemUI()
@@ -133,18 +139,16 @@ class PlayerActivity : AppCompatActivity() {
         outState.putBoolean(UI_IS_HIDDEN, uiIsHidden)
     }
 
-    override fun onBackPressed() {
-        val resultIntent = Intent()
-        resultIntent.putExtra(PLAYER_PLAYLIST_POSITION, videoPlayer.currentWindowIndex)
-        setResult(Activity.RESULT_OK, resultIntent)
-        super.onBackPressed()
+    override fun onDestroy() {
+        super.onDestroy()
+        videoPlayer.removeListener(playerListener)
+    }
+
+    companion object {
+        const val UI_IS_HIDDEN =
+            "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.UI_IS_HIDDEN"
+        const val SHOULD_START_SERVICE =
+            "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.SHOULD_START_SERVICE"
+        const val PLAYER_NOTIFICATION_ID = 1
     }
 }
-
-const val PLAYER_PLAYLIST_POSITION =
-    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.PLAYER_PLAYLIST_POSITION"
-const val UI_IS_HIDDEN =
-    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.UI_IS_HIDDEN"
-const val SHOULD_START_SERVICE =
-    "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.SHOULD_START_SERVICE"
-const val PLAYER_NOTIFICATION_ID = 1

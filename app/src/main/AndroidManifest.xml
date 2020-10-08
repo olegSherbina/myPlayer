@@ -3,6 +3,7 @@
     package="com.example.myplayer">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -16,7 +17,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.playeractivity.activity.PlayerActivity"></activity>
+        <activity
+            android:name=".ui.playeractivity.activity.PlayerActivity"
+            android:launchMode="singleTask">
+        </activity>
         <activity android:name=".ui.mainactivity.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

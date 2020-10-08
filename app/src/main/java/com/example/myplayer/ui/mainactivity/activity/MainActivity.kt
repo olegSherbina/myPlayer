@@ -1,8 +1,12 @@
 package com.example.myplayer.ui.mainactivity.activity
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -12,28 +16,53 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
 import com.example.myplayer.core.utils.UrlUtils
-import com.example.myplayer.service.PlayerNotificationService
+import com.example.myplayer.player.ExoPlayerWrapper
 import com.example.myplayer.ui.mainactivity.viewmodel.MainActivityViewModel
-import com.example.myplayer.ui.playeractivity.activity.PLAYER_PLAYLIST_POSITION
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
+import com.google.android.exoplayer2.SimpleExoPlayer
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
-    val videoThumbnailsUrl = ArrayList<String>()
-    val videosUrl = ArrayList<String>()
+    private val videoThumbnailsUrl = ArrayList<String>()
+    private val videosUrl = ArrayList<String>()
+    private var shouldScrollToPlayerPosition = true
+
+    @Inject
+    lateinit var exoPlayerWrapper: ExoPlayerWrapper
+    lateinit var videoPlayer: SimpleExoPlayer
     private val layoutManager: LinearLayoutManager =
         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        checkInternetConnection()
         setPreviewsRecyclerView()
         addObservers()
         loadThumbnails()
+        videoPlayer = exoPlayerWrapper.getInstance()
+    }
+
+    private fun checkInternetConnection() {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+        if (!isConnected) {
+            Log.v(TAG, "no Internet connection")
+            Toast.makeText(
+                this,
+                getString(R.string.no_internet_connection_warning),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Log.v(TAG, "Internet is connected")
+        }
     }
 
     private fun loadThumbnails() {
@@ -51,8 +80,7 @@ class MainActivity : AppCompatActivity() {
                 putStringArrayListExtra(VIDEO_THUMBNAILS_URL, videoThumbnailsUrl)
                 putStringArrayListExtra(VIDEOS_URL, videosUrl)
             }
-            startActivityForResult(intent, PLAYERACTIVITY_RESULT_CODE)
-            //startActivity(intent)
+            startActivity(intent)
         }
         previewsRecyclerView.adapter?.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -76,24 +104,33 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            PLAYERACTIVITY_RESULT_CODE -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    val currentItem = data?.getIntExtra(PLAYER_PLAYLIST_POSITION, 0) ?: 0
-                    scrollToCurrentItem(currentItem)
-                }
-            }
+
+    override fun onResume() {
+        super.onResume()
+        if (shouldScrollToPlayerPosition) {
+            scrollToCurrentItem(videoPlayer.currentWindowIndex)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(POSITION, layoutManager.findFirstVisibleItemPosition())
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        scrollToCurrentItem(savedInstanceState.getInt(POSITION))
+        shouldScrollToPlayerPosition = false
+        super.onRestoreInstanceState(savedInstanceState)
     }
 
     private fun scrollToCurrentItem(currentItem: Int) {
         previewsRecyclerView.scrollToPosition(currentItem)
     }
-}
 
-const val VIDEOS_URL = "com.example.myplayer.ui.activity.VIDEO_URL"
-const val VIDEO_THUMBNAILS_URL = "com.example.myplayer.ui.activity.VIDEO_THUMBNAIL"
-const val POSITION = "com.example.myplayer.ui.activity.POSITION"
-const val PLAYERACTIVITY_RESULT_CODE = 1
+    companion object {
+        const val VIDEOS_URL = "com.example.myplayer.ui.activity.VIDEO_URL"
+        const val VIDEO_THUMBNAILS_URL = "com.example.myplayer.ui.activity.VIDEO_THUMBNAIL"
+        const val POSITION = "com.example.myplayer.ui.activity.POSITION"
+        const val TAG = "MainActivity"
+    }
+}

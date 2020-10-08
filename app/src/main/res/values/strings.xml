@@ -7,4 +7,5 @@
     <string name="player_notification_message">notification message</string>
     <string name="content_title_placeholder">Now playing:</string>
     <string name="content_description_placeholder">Some music</string>
+    <string name="no_internet_connection_warning">No internet connection, loading videos from cache</string>
 </resources>
