@@ -6,6 +6,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -30,10 +32,11 @@ import kotlinx.android.synthetic.main.activity_player.*
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
+
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
 
-    private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for caching videos n stuff
+    private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for downloading videos
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
     private var playListPosition: Int = 0
@@ -81,6 +84,20 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_activity_player, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    // handle button activities
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id: Int = item.itemId
+        if (id == R.id.download_button) {
+            Toast.makeText(this, "DOWNLOAD CLICKED", Toast.LENGTH_SHORT).show()
+            //TODO check if not already downloaded or downloading & start download
+        }
+        return super.onOptionsItemSelected(item)
+    }
     private fun setEventListeners() {
         videoPlayer.addListener(playerListener)
         player_view.setControllerVisibilityListener {
@@ -149,7 +166,7 @@ class PlayerActivity : AppCompatActivity() {
         videoPlayer.removeListener(playerListener)
     }
 
-    inner class MyEventListener : Player.EventListener {
+    private inner class MyEventListener : Player.EventListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 Player.STATE_IDLE -> {

@@ -7,8 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import com.example.myplayer.core.base.BaseViewModel
 
 class PlayerActivityViewModel @ViewModelInject constructor(
-    //TODO interactors, mappers n stuff
+
 ): BaseViewModel() {
-    //TODO livedata vars n methods
-    //TODO save vids into cache
+
+    fun checkIfVideoIsDownloaded(){
+
+    }
 }

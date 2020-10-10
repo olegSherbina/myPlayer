@@ -96,6 +96,7 @@ class MainActivityViewModel @ViewModelInject constructor(
     fun writeTestData() {
         val testPlaylistName = "Test playlist"
         val testPlaylistLinks = mutableListOf(
+            Pair("https://www.youtube.com/watch?v=1C4kM76MUsE", "https://dump.video/i/1LRjyO.mp4"),
             Pair("https://www.youtube.com/watch?v=V4QuVvPjxwk", "https://dump.video/i/Phdch0.mp4"),
             Pair("https://www.youtube.com/watch?v=0CxxS5F-9LQ", "https://dump.video/i/NS5tCP.mp4"),
             Pair("https://www.youtube.com/watch?v=ojubEBKoA3A", "https://dump.video/i/PtxMos.mp4"),
