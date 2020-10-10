@@ -25,16 +25,16 @@ abstract class MyPlayerDatabase : RoomDatabase() {
 @Dao
 interface PlaylistDao {
     @Query("SELECT * FROM playlist")
-    fun getAll(): List<Playlist>
+    fun getAll(): Single<List<Playlist>>
 
     @Query("SELECT * FROM playlist WHERE name LIKE :name LIMIT 1")
-    fun loadPlayListLinks(name: String): Single<Playlist>
+    fun loadPlayList(name: String): Single<Playlist>
 
     @Insert
-    fun savePlaylistLinks(vararg playlist: Playlist): Completable
+    fun savePlaylist(vararg playlist: Playlist): Completable
 
-    @Delete
-    fun delete(Playlist: Playlist)
+    @Query("DELETE FROM playlist WHERE name = :name")
+    fun deletePlaylist(name: String): Completable
 }
 
 class DataConverter : java.io.Serializable {
@@ -45,7 +45,7 @@ class DataConverter : java.io.Serializable {
         return gson.toJson(playlist, type)
     }
 
-    @TypeConverter // note this annotation
+    @TypeConverter
     fun toPlaylist(playlistString: String?): List<Pair<String, String>> {
         val gson = Gson()
         val type: Type = object : TypeToken<List<Pair<String, String>>?>() {}.type

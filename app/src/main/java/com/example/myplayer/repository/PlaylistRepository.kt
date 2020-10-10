@@ -7,7 +7,11 @@ import io.reactivex.Single
 
 interface PlaylistRepository {
 
-    fun savePlaylistLinks(playlist: Playlist): Completable
+    fun loadAllPlaylists(): Single<List<Playlist>>
 
-    fun loadPlaylistLinks(playlistName: String): Single<Playlist>
+    fun savePlaylist(playlist: Playlist): Completable
+
+    fun loadPlaylist(playlistName: String): Single<Playlist>
+
+    fun deletePlaylist(playlistName: String): Completable
 }

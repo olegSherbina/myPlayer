@@ -1,12 +1,7 @@
 package com.example.myplayer.ui.mainactivity.activity
 
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -15,8 +10,8 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
+import com.example.myplayer.core.player.MyPlayer
 import com.example.myplayer.core.utils.UrlUtils
-import com.example.myplayer.player.ExoPlayerWrapper
 import com.example.myplayer.viewmodel.MainActivityViewModel
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
@@ -34,40 +29,26 @@ class MainActivity : AppCompatActivity() {
     private var shouldScrollToPlayerPosition = true
 
     @Inject
-    lateinit var exoPlayerWrapper: ExoPlayerWrapper
-    lateinit var videoPlayer: SimpleExoPlayer
+    lateinit var myPlayer: MyPlayer
+    private lateinit var videoPlayer: SimpleExoPlayer
     private val layoutManager: LinearLayoutManager =
         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        checkInternetConnection()
         setPreviewsRecyclerView()
         addObservers()
-        loadPlaylistLinks()
-        videoPlayer = exoPlayerWrapper.getInstance()
-    }
-
-    private fun checkInternetConnection() {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
-        if (!isConnected) {
-            Log.v(TAG, "no Internet connection")
-            Toast.makeText(
-                this,
-                getString(R.string.no_internet_connection_warning),
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Log.v(TAG, "Internet is connected")
-        }
+        writeTestData()
+        videoPlayer = myPlayer.getInstance()
     }
 
     private fun loadPlaylistLinks() {
-        viewModel.writeTestData()
         viewModel.loadPlaylistLinks("Test playlist")
+    }
+
+    private fun writeTestData() {
+        viewModel.writeTestData()
     }
 
     private fun setPreviewsRecyclerView() {
@@ -88,6 +69,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addObservers() {
+        viewModel.testPlaylistIsSaved.observe(this, Observer {
+            loadPlaylistLinks()
+        })
+
         viewModel.playlistLinks.observe(this, Observer { thumbnailsAndVideosUrl ->
             videoThumbnailsUrl.clear()
             thumbnailsAndVideosUrl.forEach { thumbnailAndVideoUrl ->

@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable
 import android.os.IBinder
 import com.example.myplayer.R
 import com.example.myplayer.core.base.MyApplication.Companion.CHANNEL_NOTIFICATION_ID
-import com.example.myplayer.player.ExoPlayerWrapper
+import com.example.myplayer.core.player.MyPlayer
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.POSITION
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEOS_URL
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEO_THUMBNAILS_URL
@@ -23,15 +23,17 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class PlayerNotificationService : IntentService(PlayerNotificationService::class.java.simpleName) {
     @Inject
-    lateinit var exoPlayerWrapper: ExoPlayerWrapper
+    lateinit var myPlayer: MyPlayer
     lateinit var videoPlayer: SimpleExoPlayer
     private lateinit var playerNotificationManager: PlayerNotificationManager
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
+    private var isOffline by Delegates.notNull<Boolean>()
     private var playListPosition: Int = 0
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -45,7 +47,7 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
 
     override fun onCreate() {
         super.onCreate()
-        videoPlayer = exoPlayerWrapper.getInstance()
+        videoPlayer = myPlayer.getInstance()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,6 +56,7 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
             videoThumbnailsUrl =
                 intent.getStringArrayListExtra(VIDEO_THUMBNAILS_URL) as ArrayList<String>
             playListPosition = intent.getIntExtra(POSITION, 0)
+            isOffline = intent.getBooleanExtra(OFFLINE, false)
             addNotificationToPlayer()
             setPlayer()
         }
@@ -64,8 +67,8 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
         val playlistItems: List<MediaItem> = videosUrl.map {
             generateMediaItem(it)
         }
-        videoPlayer.seekTo(playListPosition, 0)
         videoPlayer.setMediaItems(playlistItems)
+        videoPlayer.seekTo(playListPosition, 0)
         videoPlayer.playWhenReady = true
         videoPlayer.prepare()
     }
@@ -101,7 +104,8 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
                         override fun onBitmapFailed(e: Exception, errorDrawable: Drawable?) {}
                         override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
                     }
-                    Picasso.get().load(videoThumbnailsUrl[videoPlayer.currentWindowIndex]).into(target)
+                    Picasso.get().load(videoThumbnailsUrl[videoPlayer.currentWindowIndex])
+                        .into(target)
                     return result
                 }
 
@@ -152,7 +156,9 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
 
     companion object {
         const val FROM_NOTIFICATION =
-            "com.example.myplayer.service.PlayerNotificationService"
+            "com.example.myplayer.service.PlayerNotificationService.FROM_NOTIFICATION"
+        const val OFFLINE =
+            "com.example.myplayer.service.PlayerNotificationService.OFFLINE"
     }
 }
 

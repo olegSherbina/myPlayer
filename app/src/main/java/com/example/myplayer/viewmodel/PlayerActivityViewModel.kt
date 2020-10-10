@@ -10,4 +10,5 @@ class PlayerActivityViewModel @ViewModelInject constructor(
     //TODO interactors, mappers n stuff
 ): BaseViewModel() {
     //TODO livedata vars n methods
+    //TODO save vids into cache
 }

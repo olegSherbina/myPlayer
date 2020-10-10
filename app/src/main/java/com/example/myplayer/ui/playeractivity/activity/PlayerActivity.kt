@@ -1,15 +1,22 @@
 package com.example.myplayer.ui.playeractivity.activity
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myplayer.R
-import com.example.myplayer.player.ExoPlayerWrapper
+import com.example.myplayer.core.player.MyPlayer
 import com.example.myplayer.service.PlayerNotificationService
 import com.example.myplayer.service.PlayerNotificationService.Companion.FROM_NOTIFICATION
+import com.example.myplayer.service.PlayerNotificationService.Companion.OFFLINE
+import com.example.myplayer.ui.mainactivity.activity.MainActivity
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.POSITION
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEOS_URL
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEO_THUMBNAILS_URL
@@ -21,6 +28,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_player.*
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
@@ -29,39 +37,15 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>
     private var playListPosition: Int = 0
-    //private var shouldSwitchToNewPosition = false
 
     @Inject
-    lateinit var exoPlayerWrapper: ExoPlayerWrapper
-    lateinit var videoPlayer: SimpleExoPlayer
+    lateinit var myPlayer: MyPlayer
+    private lateinit var videoPlayer: SimpleExoPlayer
     private var shouldStartService: Boolean = true
     private var uiIsHidden: Boolean = false
     private var fromNotification = false
-    private val playerListener: Player.EventListener = object : Player.EventListener {
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            when (playbackState) {
-                Player.STATE_IDLE -> {
-                    val a = 69
-                }
-                Player.STATE_BUFFERING -> {
-                    videoBufferingProgressBar.visibility = View.VISIBLE
-                }
-                Player.STATE_READY -> {
-                    videoBufferingProgressBar.visibility = View.GONE
-                }
-                Player.STATE_ENDED -> {
-                    val a = 69
-                }
-            }
-        }
-
-        override fun onPositionDiscontinuity(reason: Int) {
-            super.onPositionDiscontinuity(reason)
-            if (reason == DISCONTINUITY_REASON_SEEK) {
-                playListPosition = videoPlayer.currentWindowIndex
-            }
-        }
-    }
+    private var internetIsConnected by Delegates.notNull<Boolean>()
+    private val playerListener = MyEventListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,8 +54,9 @@ class PlayerActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
         setContentView(R.layout.activity_player)
+        internetIsConnected = checkInternetConnection()
         fromNotification = intent.getBooleanExtra(FROM_NOTIFICATION, false)
-        videoPlayer = exoPlayerWrapper.getInstance()
+        videoPlayer = myPlayer.getInstance()
         if (!fromNotification) {
             playListPosition = intent.getIntExtra(POSITION, 0)
             videoThumbnailsUrl =
@@ -112,6 +97,9 @@ class PlayerActivity : AppCompatActivity() {
         serviceIntent.putExtra(VIDEO_THUMBNAILS_URL, videoThumbnailsUrl)
         serviceIntent.putExtra(VIDEOS_URL, videosUrl)
         serviceIntent.putExtra(POSITION, playListPosition)
+        if (!internetIsConnected) {
+            serviceIntent.putExtra(OFFLINE, true)
+        }
         startService(serviceIntent)
     }
 
@@ -133,6 +121,23 @@ class PlayerActivity : AppCompatActivity() {
         uiIsHidden = false
     }
 
+    private fun checkInternetConnection(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting == true
+        if (!isConnected) {
+            Log.v(MainActivity.TAG, "no Internet connection")
+            Toast.makeText(
+                this,
+                getString(R.string.no_internet_connection_warning),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Log.v(MainActivity.TAG, "Internet is connected")
+        }
+        return isConnected
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(SHOULD_START_SERVICE, false)
@@ -142,6 +147,32 @@ class PlayerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         videoPlayer.removeListener(playerListener)
+    }
+
+    inner class MyEventListener : Player.EventListener {
+        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            when (playbackState) {
+                Player.STATE_IDLE -> {
+                    //NOP
+                }
+                Player.STATE_BUFFERING -> {
+                    videoBufferingProgressBar.visibility = View.VISIBLE
+                }
+                Player.STATE_READY -> {
+                    videoBufferingProgressBar.visibility = View.GONE
+                }
+                Player.STATE_ENDED -> {
+                    //NOP
+                }
+            }
+        }
+
+        override fun onPositionDiscontinuity(reason: Int) {
+            super.onPositionDiscontinuity(reason)
+            if (reason == DISCONTINUITY_REASON_SEEK) {
+                playListPosition = videoPlayer.currentWindowIndex
+            }
+        }
     }
 
     companion object {

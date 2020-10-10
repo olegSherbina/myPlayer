@@ -5,11 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.core.app.NotificationManagerCompat
-import com.example.myplayer.player.ExoPlayerWrapper
+import com.example.myplayer.core.player.MyPlayer
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class MyApplication: Application(){
+class MyApplication : Application() {
+    @Inject
+    lateinit var myPlayer: MyPlayer
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -30,11 +34,11 @@ class MyApplication: Application(){
     }
 
     override fun onTerminate() {
-        ExoPlayerWrapper(this).getInstance().release()
+        myPlayer.getInstance().release()
         super.onTerminate()
     }
 
-    companion object{
+    companion object {
         const val CHANNEL_NOTIFICATION_ID =
             "com.example.myplayer.ui.playeractivity.activity.PlayerActivity.CHANNEL_NOTIFICATION_ID"
     }

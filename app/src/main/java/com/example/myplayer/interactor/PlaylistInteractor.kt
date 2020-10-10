@@ -1,27 +1,39 @@
 package com.example.myplayer.interactor
 
 import com.example.myplayer.model.Playlist
-import com.example.myplayer.usecase.playlist.LoadPlaylistLinksUseCase
-import com.example.myplayer.usecase.playlist.SavePlaylistLinksUseCase
+import com.example.myplayer.usecase.playlist.DeletePlaylistUseCase
+import com.example.myplayer.usecase.playlist.LoadAllPlaylistsUseCase
+import com.example.myplayer.usecase.playlist.LoadPlaylistUseCase
+import com.example.myplayer.usecase.playlist.SavePlaylistUseCase
 import javax.inject.Inject
 
-
 class PlaylistInteractor @Inject constructor(
-    private val savePlaylistLinksLinksUseCase: SavePlaylistLinksUseCase,
-    private val loadPlaylistLinksLinksUseCase: LoadPlaylistLinksUseCase
+    private val loadAllPlaylistsUseCase: LoadAllPlaylistsUseCase,
+    private val savePlaylistLinksUseCase: SavePlaylistUseCase,
+    private val loadPlaylistLinksUseCase: LoadPlaylistUseCase,
+    private val deletePlaylistLinksUseCase: DeletePlaylistUseCase
 ) {
-    fun savePlaylistLinks(playlist: Playlist) =
-        savePlaylistLinksLinksUseCase.invoke(
-            SavePlaylistLinksUseCase.Request(
+    fun savePlaylist(playlist: Playlist) =
+        savePlaylistLinksUseCase.invoke(
+            SavePlaylistUseCase.Request(
                 playlist
             )
         )
 
-    fun loadPlaylistLinks(playlistName: String) =
-        loadPlaylistLinksLinksUseCase.invoke(
-            LoadPlaylistLinksUseCase.Request(
+    fun loadPlaylist(playlistName: String) =
+        loadPlaylistLinksUseCase.invoke(
+            LoadPlaylistUseCase.Request(
                 playlistName
             )
         )
 
+    fun deletePlaylist(playlistName: String) =
+        deletePlaylistLinksUseCase.invoke(
+            DeletePlaylistUseCase.Request(
+                playlistName
+            )
+        )
+
+    fun loadAllPlaylists() =
+        loadAllPlaylistsUseCase.invoke()
 }

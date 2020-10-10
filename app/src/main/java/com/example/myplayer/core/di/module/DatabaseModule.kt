@@ -8,7 +8,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-
 import javax.inject.Singleton
 
 
@@ -18,12 +17,12 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideYourDatabase(
+    fun provideDatabase(
         @ApplicationContext app: Context
     ) = Room.databaseBuilder(
         app,
         MyPlayerDatabase::class.java,
-        "your_db_name"
+        "myPlayer database"
     ).build()
 
     @Singleton
