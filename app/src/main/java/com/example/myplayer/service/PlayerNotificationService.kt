@@ -14,7 +14,6 @@ import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.POSI
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEOS_URL
 import com.example.myplayer.ui.mainactivity.activity.MainActivity.Companion.VIDEO_THUMBNAILS_URL
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
-import com.example.myplayer.ui.playeractivity.activity.PlayerActivity.Companion.PLAYER_NOTIFICATION_ID
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -47,7 +46,7 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
 
     override fun onCreate() {
         super.onCreate()
-        videoPlayer = myPlayer.getInstance()
+        videoPlayer = myPlayer.getExoPlayerInstance()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -84,11 +83,11 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
             PLAYER_NOTIFICATION_ID,
             object : PlayerNotificationManager.MediaDescriptionAdapter {
                 override fun getCurrentContentTitle(player: Player): String {
-                    return getString(R.string.content_title_placeholder)
+                    return getString(R.string.player_notification_title_placeholder)
                 }
 
                 override fun getCurrentContentText(player: Player): String? {
-                    return getString(R.string.content_description_placeholder)
+                    return getString(R.string.player_notification_description_placeholder)
                 }
 
                 override fun getCurrentLargeIcon(
@@ -159,6 +158,7 @@ class PlayerNotificationService : IntentService(PlayerNotificationService::class
             "com.example.myplayer.service.PlayerNotificationService.FROM_NOTIFICATION"
         const val OFFLINE =
             "com.example.myplayer.service.PlayerNotificationService.OFFLINE"
+        const val PLAYER_NOTIFICATION_ID = 1
     }
 }
 

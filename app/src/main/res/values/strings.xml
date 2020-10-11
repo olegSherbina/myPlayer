@@ -5,8 +5,15 @@
     <string name="thumbnail_size">/sddefault.jpg</string>
     <string name="player_notification_title">My Player</string>
     <string name="player_notification_message">notification message</string>
-    <string name="content_title_placeholder">Now playing:</string>
-    <string name="content_description_placeholder">Some music</string>
+    <string name="player_notification_title_placeholder">Now playing:</string>
+    <string name="player_notification_description_placeholder">Some music</string>
     <string name="no_internet_connection_warning">No internet connection, loading videos from cache</string>
     <string name="download_button_title">Download</string>
+    <string name="download_notification_description_placeholder">music video</string>
+    <string name="download_notification_title_placeholder">Downloading video</string>
+    <string name="access_storage_rationale_title">Permission required</string>
+    <string name="access_storage_rationale_message">MyPlayer needs storage access to download video</string>
+    <string name="ok">Ok</string>
+    <string name="cannot_download">Permission Denied, MyPlayer is unable to download video</string>
+    <string name="no">No</string>
 </resources>

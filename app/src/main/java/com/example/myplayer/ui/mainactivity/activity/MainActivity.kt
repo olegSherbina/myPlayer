@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.SnapHelper
 import com.example.myplayer.R
 import com.example.myplayer.core.player.MyPlayer
 import com.example.myplayer.core.utils.UrlUtils
-import com.example.myplayer.viewmodel.MainActivityViewModel
 import com.example.myplayer.ui.playeractivity.activity.PlayerActivity
 import com.example.myplayer.ui.recyclerview.adapter.PreviewsRecyclerViewAdapter
 import com.example.myplayer.ui.recyclerview.adapter.onItemClick
+import com.example.myplayer.viewmodel.MainActivityViewModel
 import com.google.android.exoplayer2.SimpleExoPlayer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val videosUrl = ArrayList<String>()
     private var shouldScrollToPlayerPosition = true
 
+    //TODO get rid of Exoplayer instance in MainActivity
     @Inject
     lateinit var myPlayer: MyPlayer
     private lateinit var videoPlayer: SimpleExoPlayer
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         setPreviewsRecyclerView()
         addObservers()
         writeTestData()
-        videoPlayer = myPlayer.getInstance()
+        videoPlayer = myPlayer.getExoPlayerInstance()
     }
 
     private fun loadPlaylistLinks() {

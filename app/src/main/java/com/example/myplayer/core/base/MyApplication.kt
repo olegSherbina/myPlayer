@@ -34,7 +34,7 @@ class MyApplication : Application() {
     }
 
     override fun onTerminate() {
-        myPlayer.getInstance().release()
+        myPlayer.getExoPlayerInstance().release()
         super.onTerminate()
     }
 

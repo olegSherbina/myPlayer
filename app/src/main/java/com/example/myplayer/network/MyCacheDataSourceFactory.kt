@@ -16,7 +16,7 @@ import retrofit2.Retrofit
 import java.io.File
 
 
-class CacheDataSourceFactory(
+class MyCacheDataSourceFactory(
     private val context: Context
 ) :
     DataSource.Factory {
@@ -34,12 +34,11 @@ class CacheDataSourceFactory(
     }
 
     init {
-        val userAgent: String =
-            Util.getUserAgent(context, context.getString(R.string.app_name))
         val bandwidthMeter = DefaultBandwidthMeter()
         defaultDataSourceFactory = DefaultDataSourceFactory(
             this.context,
             bandwidthMeter,
+            //DefaultHttpDataSourceFactory()
             OkHttpDataSourceFactory(
                 Retrofit.Builder()
                     .baseUrl("http://baseurl.com")
