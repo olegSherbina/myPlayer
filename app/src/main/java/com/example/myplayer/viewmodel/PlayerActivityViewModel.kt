@@ -10,7 +10,4 @@ class PlayerActivityViewModel @ViewModelInject constructor(
 
 ): BaseViewModel() {
 
-    fun checkIfVideoIsDownloaded(){
-
-    }
 }

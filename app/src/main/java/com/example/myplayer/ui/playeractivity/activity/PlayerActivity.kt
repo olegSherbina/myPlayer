@@ -265,17 +265,20 @@ class PlayerActivity : AppCompatActivity() {
 
         override fun onPositionDiscontinuity(reason: Int) {
             super.onPositionDiscontinuity(reason)
-            playListPosition = videoPlayer.currentWindowIndex
-            val dir = File(Environment.getExternalStorageDirectory(), "/MyPlayerVideos/downloads")
-            dir.mkdirs()
-            val file = File(dir, playListPosition.toString() + ".mp4")
-            val latestWindowIndex: Int = videoPlayer.getCurrentWindowIndex()
-            if (latestWindowIndex != lastWindowIndex) {
-                lastWindowIndex = latestWindowIndex
-                if (file.exists() && !isInternetConnected()) {
-                    videoPlayer.setMediaItems(offlineMediaItems)
-                } else {
-                    videoPlayer.setMediaItems(mediaItems)
+            if (!fromNotification) {
+                playListPosition = videoPlayer.currentWindowIndex
+                val dir =
+                    File(Environment.getExternalStorageDirectory(), "/MyPlayerVideos/downloads")
+                dir.mkdirs()
+                val file = File(dir, playListPosition.toString() + ".mp4")
+                val latestWindowIndex: Int = videoPlayer.getCurrentWindowIndex()
+                if (latestWindowIndex != lastWindowIndex) {
+                    lastWindowIndex = latestWindowIndex
+                    if (file.exists() && !isInternetConnected()) {
+                        //videoPlayer.setMediaItems(offlineMediaItems)
+                    } else {
+                        //videoPlayer.setMediaItems(mediaItems)
+                    }
                 }
             }
         }

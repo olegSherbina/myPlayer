@@ -47,7 +47,6 @@ class MyCacheDataSourceFactory(
                             .addInterceptor(HttpLoggingInterceptor()
                                 .apply {
                                     level = HttpLoggingInterceptor.Level.BASIC
-
                                 })
                             .build()
                     )
