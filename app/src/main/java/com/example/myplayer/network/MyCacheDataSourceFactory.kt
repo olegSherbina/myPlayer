@@ -1,15 +1,16 @@
 package com.example.myplayer.network
 
 import android.content.Context
-import com.example.myplayer.R
 import com.google.android.exoplayer2.database.ExoDatabaseProvider
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
-import com.google.android.exoplayer2.upstream.*
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.FileDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSink
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
-import com.google.android.exoplayer2.util.Util
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -34,7 +35,7 @@ class MyCacheDataSourceFactory(
     }
 
     init {
-        val bandwidthMeter = DefaultBandwidthMeter()
+        val bandwidthMeter = DefaultBandwidthMeter.Builder(context).build()
         defaultDataSourceFactory = DefaultDataSourceFactory(
             this.context,
             bandwidthMeter,

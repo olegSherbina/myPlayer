@@ -1,7 +1,7 @@
 package com.example.myplayer.repository.repositoryimpl
 
 import com.example.myplayer.model.MyPlayerDatabase
-import com.example.myplayer.model.Playlist
+import com.example.myplayer.entities.Playlist
 import com.example.myplayer.repository.PlaylistRepository
 import io.reactivex.Completable
 import io.reactivex.Single

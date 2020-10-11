@@ -28,7 +28,7 @@ import kotlin.properties.Delegates
 class PlayerNotificationService : IntentService(PlayerNotificationService::class.java.simpleName) {
     @Inject
     lateinit var myPlayer: MyPlayer
-    lateinit var videoPlayer: SimpleExoPlayer
+    private lateinit var videoPlayer: SimpleExoPlayer
     private lateinit var playerNotificationManager: PlayerNotificationManager
     private lateinit var videoThumbnailsUrl: ArrayList<String>
     private lateinit var videosUrl: ArrayList<String>

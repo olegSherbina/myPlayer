@@ -44,7 +44,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
 
-    private val viewModel: PlayerActivityViewModel by viewModels() //TODO use viewmodel for downloading videos
+    private val viewModel: PlayerActivityViewModel by viewModels()
 
     @Inject
     lateinit var myPlayer: MyPlayer
@@ -56,7 +56,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var offlineMediaItems: List<MediaItem>
     private var playListPosition: Int = 0
     private var lastWindowIndex = 0
-    private var shouldStartService: Boolean = true
+    private var shouldStartPlayerService: Boolean = true
     private var uiIsHidden: Boolean = false
     private var fromNotification = false
     private val playerListener = MyEventListener()
@@ -87,14 +87,14 @@ class PlayerActivity : AppCompatActivity() {
             offlineMediaItems = localVideosPaths.map {
                 generateMediaItem(it)
             }
-            shouldStartService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE) ?: true
+            shouldStartPlayerService = savedInstanceState?.getBoolean(SHOULD_START_SERVICE) ?: true
         } else {
-            shouldStartService = false
+            shouldStartPlayerService = false
         }
         uiIsHidden = savedInstanceState?.getBoolean(UI_IS_HIDDEN) ?: false
         player_view.player = videoPlayer
         setEventListeners()
-        if (shouldStartService) {
+        if (shouldStartPlayerService) {
             startPlayerService()
         }
         if (uiIsHidden) {

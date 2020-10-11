@@ -1,6 +1,6 @@
 package com.example.myplayer.repository
 
-import com.example.myplayer.model.Playlist
+import com.example.myplayer.entities.Playlist
 import io.reactivex.Completable
 import io.reactivex.Single
 

@@ -1,6 +1,6 @@
 package com.example.myplayer.usecase.playlist
 
-import com.example.myplayer.model.Playlist
+import com.example.myplayer.entities.Playlist
 import com.example.myplayer.repository.PlaylistRepository
 import io.reactivex.Completable
 import javax.inject.Inject

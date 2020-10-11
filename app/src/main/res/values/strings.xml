@@ -13,7 +13,8 @@
     <string name="download_notification_title_placeholder">Downloading video</string>
     <string name="access_storage_rationale_title">Permission required</string>
     <string name="access_storage_rationale_message">MyPlayer needs storage access to download video</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="cannot_download">Permission Denied, MyPlayer is unable to download video</string>
-    <string name="no">No</string>
+    <string name="no">NO</string>
+    <string name="myplayer_notification_channel">My Player channel</string>
 </resources>

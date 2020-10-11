@@ -29,7 +29,6 @@ class VideoDownloadService : IntentService(VideoDownloadService::class.java.simp
         val url = intent?.getStringExtra(DOWNLOAD_URL) ?: ""
         val fileName =
             intent?.getIntExtra(POSITION, -1).toString() //fileName is a playlist position for now
-
         downloadFile(fileName, url)
         return START_NOT_STICKY
     }
@@ -41,14 +40,6 @@ class VideoDownloadService : IntentService(VideoDownloadService::class.java.simp
 
         if (!file.exists()) {
             file.createNewFile()
-            //TODO one client instance
-            val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(
-                    HttpLoggingInterceptor()
-                        .apply {
-                            level = HttpLoggingInterceptor.Level.BASIC
-
-                        }).build()
 
             val request = Request(url, file.path)
             request.priority = Priority.HIGH
@@ -159,6 +150,13 @@ class VideoDownloadService : IntentService(VideoDownloadService::class.java.simp
 
 
     companion object {
+        private val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor()
+                    .apply {
+                        level = HttpLoggingInterceptor.Level.BASIC
+
+                    }).build()
         const val DOWNLOAD_URL =
             "com.example.myplayer.service.PlayerNotificationService.FROM_NOTIFICATION"
         const val DOWNLOAD_NOTIFICATION_ID = 2

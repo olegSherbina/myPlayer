@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.core.app.NotificationManagerCompat
+import com.example.myplayer.R
 import com.example.myplayer.core.player.MyPlayer
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -26,7 +27,7 @@ class MyApplication : Application() {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL_NOTIFICATION_ID,
-                    "My Player channel",
+                    getString(R.string.myplayer_notification_channel),
                     NotificationManager.IMPORTANCE_LOW
                 )
             )

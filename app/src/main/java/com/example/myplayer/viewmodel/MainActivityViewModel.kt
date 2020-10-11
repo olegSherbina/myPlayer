@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.myplayer.core.base.BaseViewModel
 import com.example.myplayer.interactor.PlaylistInteractor
-import com.example.myplayer.model.Playlist
+import com.example.myplayer.entities.Playlist
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 

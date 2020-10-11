@@ -1,6 +1,6 @@
 package com.example.myplayer.interactor
 
-import com.example.myplayer.model.Playlist
+import com.example.myplayer.entities.Playlist
 import com.example.myplayer.usecase.playlist.DeletePlaylistUseCase
 import com.example.myplayer.usecase.playlist.LoadAllPlaylistsUseCase
 import com.example.myplayer.usecase.playlist.LoadPlaylistUseCase
